@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { render } from 'ink';
+import { readFileSync } from 'node:fs';
 import { homedir, userInfo } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -9,6 +10,9 @@ import { LanTransport } from './transport/lan/LanTransport.js';
 import { App } from './tui/App.js';
 import { joinOrPrompt, runInput } from './tui/commands.js';
 import { parseDuration } from './util/format.js';
+
+// package.json sits one level above both src/ (dev) and dist/ (installed).
+const VERSION: string = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 
 const USAGE = `subnet — zero-cloud LAN chat & file sharing in your terminal
 
@@ -26,28 +30,43 @@ Usage: subnet [options]
       --port <n>           UDP discovery port (default ${DISCOVERY_PORT}; all peers must match)
       --ctrl-port <n>      TCP port for hosting rooms (default: random)
       --file-port <n>      TCP port for serving files (default: random)
+  -v, --version            print the version
   -h, --help               show this help
 `;
 
-const { values: o } = parseArgs({
-  options: {
-    nick: { type: 'string', short: 'n' },
-    downloads: { type: 'string', short: 'd' },
-    host: { type: 'string' },
-    join: { type: 'string' },
-    connect: { type: 'string' },
-    pass: { type: 'string', short: 'p' },
-    ttl: { type: 'string', short: 't' },
-    'auto-accept': { type: 'boolean' },
-    'no-discovery': { type: 'boolean' },
-    port: { type: 'string' },
-    'ctrl-port': { type: 'string' },
-    'file-port': { type: 'string' },
-    help: { type: 'boolean', short: 'h' },
-  },
-  strict: true,
-});
+const parse = () =>
+  parseArgs({
+    options: {
+      nick: { type: 'string', short: 'n' },
+      downloads: { type: 'string', short: 'd' },
+      host: { type: 'string' },
+      join: { type: 'string' },
+      connect: { type: 'string' },
+      pass: { type: 'string', short: 'p' },
+      ttl: { type: 'string', short: 't' },
+      'auto-accept': { type: 'boolean' },
+      'no-discovery': { type: 'boolean' },
+      port: { type: 'string' },
+      'ctrl-port': { type: 'string' },
+      'file-port': { type: 'string' },
+      help: { type: 'boolean', short: 'h' },
+      version: { type: 'boolean', short: 'v' },
+    },
+    strict: true,
+  });
 
+let o: ReturnType<typeof parse>['values'];
+try {
+  o = parse().values;
+} catch (err) {
+  process.stderr.write(`subnet: ${(err as Error).message}\nRun \`subnet --help\` for usage.\n`);
+  process.exit(2);
+}
+
+if (o.version) {
+  process.stdout.write(`${VERSION}\n`);
+  process.exit(0);
+}
 if (o.help) {
   process.stdout.write(USAGE);
   process.exit(0);

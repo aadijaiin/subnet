@@ -1,23 +1,54 @@
 {
-  "name": "subnet",
+  "name": "@aadijaiin/subnet",
   "version": "1.0.0",
   "description": "Zero-cloud LAN chat and file sharing, entirely in the terminal",
+  "keywords": [
+    "lan",
+    "chat",
+    "p2p",
+    "file-sharing",
+    "terminal",
+    "tui",
+    "cli",
+    "ink",
+    "local-network",
+    "offline"
+  ],
+  "homepage": "https://github.com/aadijaiin/subnet#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aadijaiin/subnet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aadijaiin/subnet/issues"
+  },
+  "author": "aadijaiin <aadijain363@gmail.com>",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "subnet": "dist/cli.js"
   },
-  "scripts": {
-    "dev": "tsx src/cli.tsx",
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/cli.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --import tsx --test test/*.test.ts",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"test/**/*.ts\""
-  },
+  "files": [
+    "dist",
+    "docs"
+  ],
   "engines": {
     "node": ">=22"
   },
-  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "tsx src/cli.tsx",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "start": "node dist/cli.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"test/**/*.ts\"",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm test"
+  },
   "dependencies": {
     "ink": "^8.0.0",
     "react": "^19.3.0",

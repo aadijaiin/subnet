@@ -25,25 +25,24 @@ and no internet involved.
 ● connected 1ms · host you │ alice@192.168.1.52:59128 │ lan · 3 nodes
 ```
 
-## Quick start
+## Install
 
 Requires Node.js ≥ 22.
 
 ```bash
-npm install
-npm run build
-npm start                       # or: node dist/cli.js --nick alice
-npm link                        # optional: puts `subnet` on your PATH
+npm install -g @aadijaiin/subnet
+subnet
 ```
 
-On machine A: `/host game night`. On machine B: press **Tab**, then **Enter**.
+On machine A, type `/host game night`. On machine B, run `subnet`, press
+**Tab**, then **Enter**. To try it without installing: `npx @aadijaiin/subnet`.
 
 To try it on one machine, open two terminals. Several instances share the
-discovery port, and multicast loopback lets them see each other.
+discovery port, and multicast loopback lets them see each other:
 
 ```bash
-node dist/cli.js --nick alice --host "game night"
-node dist/cli.js --nick bob --join "game night"
+subnet --nick alice --host "game night"
+subnet --nick bob --join "game night"
 ```
 
 > **Firewall:** the first time, macOS asks whether to allow incoming
@@ -158,11 +157,17 @@ Noise/TLS-PSK layer goes; see ARCHITECTURE.md.
 ## Development
 
 ```bash
+git clone https://github.com/aadijaiin/subnet && cd subnet && npm install
 npm run dev          # run from source with tsx
 npm test             # 20 tests: real UDP/TCP between in-process engines
 npm run typecheck
 npm run format
 ```
+
+**Releasing:** `npm version patch|minor|major`, then `npm publish`.
+`prepublishOnly` runs the typecheck and the full test suite, and `prepack`
+does a clean build. Only `dist/`, `docs/`, `README.md` and `LICENSE` are
+shipped (see `files` in package.json). Run `npm pack --dry-run` to preview.
 
 The engine tests run three engines on a private discovery port. They cover
 discovery, nick collisions, chat acks, DM privacy, file transfer, resume,
