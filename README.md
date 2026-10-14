@@ -45,10 +45,53 @@ subnet --nick alice --host "game night"
 subnet --nick bob --join "game night"
 ```
 
+> **Heads-up: it may not work on some Wi-Fi networks.** Many routers block
+> devices on the same Wi-Fi from talking to each other directly. This is
+> common on guest, office, campus, hostel and many ISP-supplied networks.
+> Rooms may show up in the list but fail to join. The easiest fix is to
+> connect both machines to a **phone's mobile hotspot**. subnet is fully
+> offline and never uses the internet, so no mobile data is consumed. On
+> most Android phones the hotspot works with mobile data turned off; some
+> phones (iPhones, for example) only let you turn the hotspot on while
+> mobile data is enabled. Alternatively, plug both machines into the same
+> router or switch with **Ethernet** cables.
+> See [Troubleshooting](#troubleshooting) for details.
+
 > **Firewall:** the first time, macOS asks whether to allow incoming
 > connections for `node`; choose **Allow**. On Linux, open UDP 47820 and,
 > if you pin them, the TCP ports set with `--ctrl-port` / `--file-port`
 > (`ufw allow 47820/udp`).
+
+## Troubleshooting
+
+**The room shows up, but joining fails with "no route to host", `EHOSTUNREACH`, or a timeout.**
+Discovery uses broadcast packets, while chat and files need direct
+device-to-device connections. Many routers forward the first and block the
+second. This is called **Wi-Fi client isolation** (also "AP isolation" or
+"privacy separator"), and it's on by default on guest networks, mesh
+systems, and many ISP, campus and hostel routers. To confirm: from one
+machine, `ping <other machine's IP>` fails while pinging the router works.
+Fixes:
+
+* **Use a phone's mobile hotspot** (recommended). Connect both machines to
+  it. subnet talks only over the local network, so mobile data can stay off
+  where the phone allows it, and no data is used either way.
+* **Use Ethernet.** Plug both machines into the same router or switch.
+* If you control the router, turn off client/AP isolation in its Wi-Fi
+  settings, or use the main (non-guest) network.
+* Install [Tailscale](https://tailscale.com) on both machines, then run
+  `subnet --no-discovery` and `/connect <tailscale-ip>:<port>`. The host's
+  port is shown in its status bar.
+
+**"didn't answer within 4s" but ping works.** A firewall on the host is
+dropping connections. On macOS, allow `node` in System Settings › Network ›
+Firewall. On Linux, run `sudo ufw allow from 192.168.0.0/16`, or the
+equivalent for firewalld. To use fixed ports you can whitelist, pass
+`--ctrl-port` and `--file-port`.
+
+**No rooms appear at all.** Both machines must use the same discovery port
+(default UDP 47820) and be on the same subnet. Some networks block
+broadcast and multicast entirely; `/connect <ip:port>` still works there.
 
 ## Commands
 

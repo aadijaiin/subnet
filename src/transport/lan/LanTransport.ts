@@ -1,6 +1,7 @@
 import net from 'node:net';
 import type { Discovery, Listener, Stream, TransportAdapter } from '../types.js';
 import { LanDiscovery, type LanDiscoveryOptions } from './discovery.js';
+import { explainDialError } from './net-errors.js';
 import { primaryIPv4 } from './net-utils.js';
 
 export interface LanTransportOptions {
@@ -59,7 +60,7 @@ export class LanTransport implements TransportAdapter {
       const sock = net.connect({ host, port, noDelay: true, keepAlive: true, keepAliveInitialDelay: 10_000 });
       const timer = setTimeout(() => {
         sock.destroy();
-        reject(new Error(`connect to ${host}:${port} timed out`));
+        reject(explainDialError(Object.assign(new Error('timed out'), { code: 'ETIMEDOUT' }), host, port, timeoutMs));
       }, timeoutMs);
       sock.once('connect', () => {
         clearTimeout(timer);
@@ -69,7 +70,7 @@ export class LanTransport implements TransportAdapter {
       });
       sock.once('error', (err) => {
         clearTimeout(timer);
-        reject(err);
+        reject(explainDialError(err, host, port, timeoutMs));
       });
     });
   }
